@@ -499,19 +499,51 @@ let charts     = {};
     if (i === today.getMonth()) o.selected = true;
     ms.add(o);
   });
-  // Year select
+  
   const ys = document.getElementById('yearSelect');
   for (let y = today.getFullYear(); y >= 2025; y--) {
     ys.add(new Option(y, y));
   }
   document.getElementById('footerTs').textContent = `IST Auto-Sync · ${today.toLocaleDateString('en-IN', {dateStyle:'medium'})}`;
+
+  // TRIGGER AUTO-LOAD ON STARTUP
+  setTimeout(autoLoadFallback, 150);
 })();
+
+// NEW FUNCTION: Handles the automatic double-check logic
+async function autoLoadFallback() {
+  setStatus('loading', 'Auto-checking current month...');
+  const success = await loadDashboardData(true); // Pass true to hide error toasts
+
+  if (!success) {
+    // If current month is empty, step back one month
+    let m = parseInt(document.getElementById('monthSelect').value);
+    let y = parseInt(document.getElementById('yearSelect').value);
+
+    if (m === 0) { // If it's January, go to December of previous year
+      m = 11;
+      y--;
+      const yOpts = Array.from(document.getElementById('yearSelect').options).map(o => parseInt(o.value));
+      if (!yOpts.includes(y)) return; // Stop if we go back too far
+    } else {
+      m--;
+    }
+
+    // Update Dropdowns
+    document.getElementById('monthSelect').value = m;
+    document.getElementById('yearSelect').value = y;
+
+    setStatus('loading', `Current month empty. Checking ${MONTHS[m]} ${y}...`);
+    
+    // Try again for the previous month (this time show errors if it fails)
+    await loadDashboardData(false);
+  }
+}
 
 function setTheme(name, btn) {
   document.documentElement.setAttribute('data-theme', name);
   document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
-  // re-render charts with new colors
   if (globalData.length > 0) renderCharts();
 }
 
@@ -526,7 +558,6 @@ function toast(msg, type = 'info', duration = 4000) {
     setTimeout(() => el.remove(), 300);
   }, duration);
 }
-
 
 function setStatus(state, msg, stats = null) {
   const dot = document.getElementById('statusDot');
@@ -545,12 +576,13 @@ function setStatus(state, msg, stats = null) {
   }
 }
 
-async function loadDashboardData() {
+// UPDATED: Now returns a boolean (true/false) so autoLoad knows if it worked
+async function loadDashboardData(isSilentFallback = false) {
   const btn = document.getElementById('analyzeBtn');
   document.getElementById('btnText').textContent = 'Loading…';
   document.getElementById('btnIcon').innerHTML = '<circle cx="12" cy="12" r="10"/>';
   btn.disabled = true;
-  setStatus('loading', 'Fetching telemetry data');
+  if (!isSilentFallback) setStatus('loading', 'Fetching telemetry data');
 
   const month   = parseInt(document.getElementById('monthSelect').value);
   const year    = parseInt(document.getElementById('yearSelect').value);
@@ -579,19 +611,21 @@ async function loadDashboardData() {
     results = await Promise.all(fetchPromises);
   } catch(e) {
     setStatus('err', 'Network error during fetch');
-    toast('Network error — check your connection', 'error');
+    if (!isSilentFallback) toast('Network error — check your connection', 'error');
     resetBtn();
-    return;
+    return false;
   }
 
   globalData = results.filter(Boolean).reverse();
   resetBtn();
 
   if (globalData.length === 0) {
-    setStatus('err', `No data found for ${MONTHS[month]} ${year}`);
-    toast(`No telemetry recorded for ${MONTHS[month]} ${year}`, 'warn', 6000);
-    renderEmpty();
-    return;
+    if (!isSilentFallback) {
+      setStatus('err', `No data found for ${MONTHS[month]} ${year}`);
+      toast(`No telemetry recorded for ${MONTHS[month]} ${year}`, 'warn', 6000);
+      renderEmpty();
+    }
+    return false; // Tells the auto-loader to try the previous month
   }
 
   const urlSet = new Set();
@@ -604,8 +638,11 @@ async function loadDashboardData() {
     { val: urls.length, lbl: 'URLs' },
     { val: countDataPoints(urls[0]), lbl: 'Data Pts' }
   ]);
-  toast(`${globalData.length} days of telemetry loaded`, 'success');
+  
+  if (!isSilentFallback) toast(`${globalData.length} days of telemetry loaded`, 'success');
+  
   renderDashboard(urls);
+  return true; // Success!
 }
 
 function countDataPoints(url) {
@@ -637,7 +674,6 @@ function renderDashboard(urls) {
     </button>`).join('');
 
   const kpiHtml = buildKpiHtml();
-
   const insightHtml = buildInsight();
 
   area.innerHTML = `
@@ -701,12 +737,6 @@ function buildKpiHtml() {
 
   const latest = site[site.length - 1];
   const prev   = site.length > 1 ? site[site.length - 2] : null;
-
-  const dp = (a, b, field) => {
-    const av = a?.[field], bv = b?.[field];
-    if (av == null || bv == null) return null;
-    return av - bv;
-  };
 
   const deskPerf = latest.desktop?.performance;
   const mobPerf  = latest.mobile?.performance;
@@ -779,8 +809,8 @@ function buildInsight() {
 
   if (perf.length >= 2) {
     const trend = perf[perf.length-1] - perf[0];
-    if (trend > 5) insights.push(`Desktop performance improved by <b>${trend.toFixed(0)} pts</b> over the tracked period.`);
-    else if (trend < -5) insights.push(`Desktop performance declined by <b>${Math.abs(trend).toFixed(0)} pts</b> — investigate recent deploys.`);
+    if (trend > 5) insights.push(`Desktop performance improved by <b>${trend.toFixed(0)} pts</b>.`);
+    else if (trend < -5) insights.push(`Desktop performance declined by <b>${Math.abs(trend).toFixed(0)} pts</b>.`);
   }
   const worstFcp = fcp.length ? Math.max(...fcp) : null;
   const bestFcp  = fcp.length ? Math.min(...fcp) : null;
@@ -789,10 +819,10 @@ function buildInsight() {
   }
   if (seo.length) {
     const avgS = Math.round(avg(seo));
-    insights.push(`Average desktop SEO score: <b>${avgS}/100</b>.`);
+    insights.push(`Average desktop SEO: <b>${avgS}/100</b>.`);
   }
   const missing = 30 - site.length;
-  if (missing > 0) insights.push(`<b>${missing}</b> day(s) have no data (automation may not have run yet).`);
+  if (missing > 0) insights.push(`<b>${missing}</b> day(s) missing data.`);
 
   return `<span class="insight-icon">💡</span><span>${insights.join(' &nbsp;·&nbsp; ')}</span>`;
 }
