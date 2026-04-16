@@ -9,14 +9,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-body: #0f172a; /* Slate 900 */
-            --bg-card: #1e293b; /* Slate 800 */
-            --border-color: #334155; /* Slate 700 */
+            --bg-body: #0f172a; 
+            --bg-card: #1e293b; 
+            --border-color: #334155; 
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
         html.theme-abyss {
-            --bg-body: #081225; /* Deep Abyss Blue */
+            --bg-body: #081225; 
             --bg-card: #0f1c35; 
             --border-color: #1e3a66;
             --text-main: #e0f2fe;
@@ -27,6 +27,7 @@
             color: var(--text-main); 
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
             transition: background-color 0.3s ease, color 0.3s ease;
+            margin: 0;
         }
         .enterprise-card {
             background-color: var(--bg-card);
@@ -38,11 +39,10 @@
             border: 1px solid var(--border-color);
             color: var(--text-main);
         }
-        
         #toast {
             visibility: hidden;
             min-width: 250px;
-            background-color: #dc2626; /* Red 600 */
+            background-color: #dc2626;
             color: #fff;
             text-align: center;
             border-radius: 6px;
@@ -61,12 +61,12 @@
             visibility: visible;
             opacity: 1;
         }
-    </script>
+    </style>
 </head>
 <body class="min-h-screen p-6 md:p-12">
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-gray-700 pb-6" style="border-color: var(--border-color);">
+        <header class="mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b pb-6" style="border-color: var(--border-color);">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">SEO Dashboard</h1>
                 <p class="mt-1" style="color: var(--text-muted);">Automated 30-Day Historical Web Vitals Analysis</p>
@@ -95,6 +95,12 @@
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
 
+        <div id="emptyState" class="hidden flex flex-col justify-center items-center py-20">
+            <svg class="w-16 h-16 mb-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+            <h3 class="text-xl font-medium mb-2">No Telemetry Data Found</h3>
+            <p style="color: var(--text-muted);">The pipeline hasn't recorded any web vitals for this time period yet.</p>
+        </div>
+
         <div id="chartsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
             <div class="enterprise-card rounded-xl p-6 shadow-lg">
                 <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Desktop Performance & SEO</h3>
@@ -119,7 +125,6 @@
         let globalData = [];
         let isFirstLoad = true;
 
-        // Init Dropdowns
         const today = new Date();
         document.getElementById('monthSelect').value = today.getMonth();
         const yearSelect = document.getElementById('yearSelect');
@@ -127,7 +132,6 @@
             yearSelect.add(new Option(y, y));
         }
 
-        // Theme Toggle Logic
         function toggleTheme() {
             const html = document.documentElement;
             if (html.classList.contains('theme-slate')) {
@@ -147,10 +151,10 @@
         }
 
         async function loadDashboardData() {
-            // UI Loading State (Button spinner)
             document.getElementById('btnText').innerText = "Loading...";
             document.getElementById('btnSpinner').classList.remove('hidden');
             document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('emptyState').classList.add('hidden');
 
             const selectedMonth = parseInt(document.getElementById('monthSelect').value);
             const selectedYear = parseInt(document.getElementById('yearSelect').value);
@@ -186,18 +190,19 @@
             }
 
             if (newlyFetchedData.length === 0) {
-                showToast("No telemetry data found for this specific window.");
+                document.getElementById('chartsContainer').classList.add('hidden');
+                document.getElementById('urlSelect').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                showToast("No telemetry data found.");
                 return; 
             }
 
             globalData = newlyFetchedData;
-
-            // Extract unique URLs and populate dropdown
             const urlSet = new Set();
             globalData.forEach(day => day.urls.forEach(site => urlSet.add(site.url)));
             
             const urlSelect = document.getElementById('urlSelect');
-            const currentSelectedUrl = urlSelect.value; // Remember what was selected before
+            const currentSelectedUrl = urlSelect.value; 
             
             urlSelect.innerHTML = '';
             urlSet.forEach(url => urlSelect.add(new Option(url, url)));
@@ -206,7 +211,6 @@
                 urlSelect.classList.remove('hidden');
                 document.getElementById('chartsContainer').classList.remove('hidden');
                 
-                // Keep the same URL selected if it exists in the new data, otherwise default to the first one
                 if (urlSet.has(currentSelectedUrl)) {
                     urlSelect.value = currentSelectedUrl;
                 }
@@ -224,7 +228,7 @@
             globalData.forEach(day => {
                 const siteData = day.urls.find(s => s.url === targetUrl);
                 if (siteData) {
-                    labels.push(day.date.substring(5)); // Just show MM-DD for cleaner X-axis
+                    labels.push(day.date.substring(5)); 
                     desktopPerf.push(siteData.desktop?.performance || null);
                     desktopSeo.push(siteData.desktop?.seo || null);
                     desktopFcp.push(siteData.desktop?.fcp_ms || null);
@@ -255,7 +259,6 @@
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // Enterprise Chart Styling
             Chart.defaults.color = '#64748b';
             Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
             
