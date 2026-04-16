@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Automation Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { slate: { 850: '#151e2e', 900: '#0f172a' } } } }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen p-6 md:p-12">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700 pb-6">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white">SEO Details</h1>
+                <p class="text-slate-400 mt-1">Automated 30-Day Historical SEO & Performance Analysis</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <select id="monthSelect" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none">
+                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                </select>
+                <select id="yearSelect" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none"></select>
+                <button onclick="loadDashboardData()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">Analyze</button>
+            </div>
+        </header>
+
+        <div id="loader" class="hidden flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+
+        <div id="chartsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+            <div class="bg-slate-850 border border-slate-700 rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Desktop Performance & SEO</h3>
+                <canvas id="desktopChart"></canvas>
+            </div>
+            <div class="bg-slate-850 border border-slate-700 rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Mobile Performance & SEO</h3>
+                <canvas id="mobileChart"></canvas>
+            </div>
+            <div class="bg-slate-850 border border-slate-700 rounded-xl p-6 shadow-lg lg:col-span-2">
+                <h3 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Raw Metrics Tracker (FCP in ms)</h3>
+                <canvas id="fcpChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let charts = {};
+
+        // Init Dropdowns
+        const today = new Date();
+        document.getElementById('monthSelect').value = today.getMonth();
+        const yearSelect = document.getElementById('yearSelect');
+        for (let y = today.getFullYear(); y >= 2025; y--) {
+            yearSelect.add(new Option(y, y));
+        }
+
+        async function loadDashboardData() {
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('chartsContainer').classList.add('hidden');
+
+            const selectedMonth = parseInt(document.getElementById('monthSelect').value);
+            const selectedYear = parseInt(document.getElementById('yearSelect').value);
+            
+            let anchorDate = new Date(selectedYear, selectedMonth + 1, 0); 
+            if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
+                anchorDate = new Date();
+            }
+
+            // Generate the last 30 days of paths
+            const fetchPromises = [];
+            for (let i = 0; i < 30; i++) {
+                const targetDate = new Date(anchorDate);
+                targetDate.setDate(anchorDate.getDate() - i);
+                
+                const y = targetDate.getFullYear();
+                const m = monthsStr[targetDate.getMonth()];
+                const d = String(targetDate.getDate()).padStart(2, '0');
+                
+                const path = `./${y}/${m}/${d}/detail.json`;
+                fetchPromises.push(fetch(path).then(res => res.ok ? res.json() : null).catch(() => null));
+            }
+
+            // Fetch all concurrently and filter out 404s
+            const results = await Promise.all(fetchPromises);
+            const validData = results.filter(d => d !== null).reverse(); // Reverse to chronological order
+
+            renderCharts(validData);
+            
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('chartsContainer').classList.remove('hidden');
+        }
+
+        function renderCharts(data) {
+            if (data.length === 0) {
+                alert("No telemetry data found for this 30-day window.");
+                return;
+            }
+
+            const labels = data.map(d => d.date);
+            
+         
+            const desktopPerf = data.map(d => d.urls[0].desktop.performance);
+            const desktopSeo = data.map(d => d.urls[0].desktop.seo);
+            
+            const mobilePerf = data.map(d => d.urls[0].mobile.performance);
+            const mobileSeo = data.map(d => d.urls[0].mobile.seo);
+
+            const desktopFcp = data.map(d => d.urls[0].desktop.fcp_ms);
+            const mobileFcp = data.map(d => d.urls[0].mobile.fcp_ms);
+
+            createChart('desktopChart', labels, [
+                { label: 'Performance', data: desktopPerf, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)' },
+                { label: 'SEO', data: desktopSeo, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' }
+            ]);
+
+            createChart('mobileChart', labels, [
+                { label: 'Performance', data: mobilePerf, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' },
+                { label: 'SEO', data: mobileSeo, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)' }
+            ]);
+
+            createChart('fcpChart', labels, [
+                { label: 'Desktop FCP (ms)', data: desktopFcp, borderColor: '#ec4899', backgroundColor: 'transparent' },
+                { label: 'Mobile FCP (ms)', data: mobileFcp, borderColor: '#06b6d4', backgroundColor: 'transparent' }
+            ]);
+        }
+
+        function createChart(canvasId, labels, datasets) {
+            if (charts[canvasId]) charts[canvasId].destroy();
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            Chart.defaults.color = '#94a3b8';
+            charts[canvasId] = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: datasets.map(ds => ({ ...ds, borderWidth: 2, tension: 0.3, fill: true })) },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { grid: { color: '#334155' }, min: 0 },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        // Auto-load on init
+        window.onload = loadDashboardData;
+    </script>
+</body>
+</html>
