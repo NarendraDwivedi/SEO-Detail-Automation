@@ -1,67 +1,123 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="theme-slate">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <title>SEO Automation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { colors: { slate: { 850: '#151e2e', 900: '#0f172a' } } } }
+    <style>
+        :root {
+            --bg-body: #0f172a; /* Slate 900 */
+            --bg-card: #1e293b; /* Slate 800 */
+            --border-color: #334155; /* Slate 700 */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        html.theme-abyss {
+            --bg-body: #081225; /* Deep Abyss Blue */
+            --bg-card: #0f1c35; 
+            --border-color: #1e3a66;
+            --text-main: #e0f2fe;
+            --text-muted: #7dd3fc;
+        }
+        body { 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .enterprise-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .enterprise-input {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #dc2626; /* Red 600 */
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 12px 24px;
+            position: fixed;
+            z-index: 50;
+            right: 30px;
+            bottom: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
         }
     </script>
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-    </style>
 </head>
 <body class="min-h-screen p-6 md:p-12">
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700 pb-6">
+        <header class="mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-gray-700 pb-6" style="border-color: var(--border-color);">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white">SEO Dashboard</h1>
-                <p class="text-slate-400 mt-1">Automated 30-Day Historical Web Vitals Analysis</p>
+                <h1 class="text-3xl font-bold tracking-tight">SEO Dashboard</h1>
+                <p class="mt-1" style="color: var(--text-muted);">Automated 30-Day Historical Web Vitals Analysis</p>
             </div>
             
-            <div class="flex flex-wrap gap-3">
-                <select id="urlSelect" onchange="updateChartsForUrl()" class="hidden bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none max-w-xs truncate"></select>
-                <select id="monthSelect" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none">
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="toggleTheme()" class="enterprise-card hover:brightness-110 p-2.5 rounded-lg transition mr-2" title="Switch Dark Theme">
+                    <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+                <select id="urlSelect" onchange="updateChartsForUrl()" class="hidden enterprise-input text-sm rounded-lg focus:ring-blue-500 block p-2.5 outline-none max-w-xs truncate"></select>
+                <select id="monthSelect" class="enterprise-input text-sm rounded-lg focus:ring-blue-500 block p-2.5 outline-none">
                     <option value="0">January</option><option value="1">February</option><option value="2">March</option>
                     <option value="3">April</option><option value="4">May</option><option value="5">June</option>
                     <option value="6">July</option><option value="7">August</option><option value="8">September</option>
                     <option value="9">October</option><option value="10">November</option><option value="11">December</option>
                 </select>
-                <select id="yearSelect" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none"></select>
-                <button onclick="loadDashboardData()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">Analyze</button>
+                <select id="yearSelect" class="enterprise-input text-sm rounded-lg focus:ring-blue-500 block p-2.5 outline-none"></select>
+                <button id="analyzeBtn" onclick="loadDashboardData()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition flex items-center gap-2">
+                    <span id="btnText">Analyze</span>
+                    <div id="btnSpinner" class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                </button>
             </div>
         </header>
 
-        <div id="loader" class="hidden flex justify-center items-center py-20">
+        <div id="initialLoader" class="flex justify-center items-center py-32">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
 
         <div id="chartsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
-            <div class="bg-slate-850 border border-slate-700 rounded-xl p-6 shadow-lg">
-                <h3 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Desktop Performance & SEO</h3>
+            <div class="enterprise-card rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Desktop Performance & SEO</h3>
                 <canvas id="desktopChart"></canvas>
             </div>
-            <div class="bg-slate-850 border border-slate-700 rounded-xl p-6 shadow-lg">
-                <h3 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Mobile Performance & SEO</h3>
+            <div class="enterprise-card rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Mobile Performance & SEO</h3>
                 <canvas id="mobileChart"></canvas>
             </div>
-            <div class="bg-slate-850 border border-slate-700 rounded-xl p-6 shadow-lg lg:col-span-2">
-                <h3 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Raw Metrics Tracker (FCP in ms)</h3>
+            <div class="enterprise-card rounded-xl p-6 shadow-lg lg:col-span-2">
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Raw Metrics Tracker (FCP in ms)</h3>
                 <canvas id="fcpChart"></canvas>
             </div>
         </div>
     </div>
 
+    <div id="toast">No data found for this period.</div>
+
     <script>
         const monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         let charts = {};
         let globalData = [];
+        let isFirstLoad = true;
 
         // Init Dropdowns
         const today = new Date();
@@ -71,10 +127,30 @@
             yearSelect.add(new Option(y, y));
         }
 
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('theme-slate')) {
+                html.classList.remove('theme-slate');
+                html.classList.add('theme-abyss');
+            } else {
+                html.classList.remove('theme-abyss');
+                html.classList.add('theme-slate');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
+        }
+
         async function loadDashboardData() {
-            document.getElementById('loader').classList.remove('hidden');
-            document.getElementById('chartsContainer').classList.add('hidden');
-            document.getElementById('urlSelect').classList.add('hidden');
+            // UI Loading State (Button spinner)
+            document.getElementById('btnText').innerText = "Loading...";
+            document.getElementById('btnSpinner').classList.remove('hidden');
+            document.getElementById('analyzeBtn').disabled = true;
 
             const selectedMonth = parseInt(document.getElementById('monthSelect').value);
             const selectedYear = parseInt(document.getElementById('yearSelect').value);
@@ -98,35 +174,49 @@
             }
 
             const results = await Promise.all(fetchPromises);
-            globalData = results.filter(d => d !== null).reverse(); 
+            const newlyFetchedData = results.filter(d => d !== null).reverse(); 
 
-            if (globalData.length === 0) {
-                document.getElementById('loader').classList.add('hidden');
-                alert("No telemetry data found for this window.");
-                return;
+            document.getElementById('btnText').innerText = "Analyze";
+            document.getElementById('btnSpinner').classList.add('hidden');
+            document.getElementById('analyzeBtn').disabled = false;
+            
+            if (isFirstLoad) {
+                document.getElementById('initialLoader').classList.add('hidden');
+                isFirstLoad = false;
             }
+
+            if (newlyFetchedData.length === 0) {
+                showToast("No telemetry data found for this specific window.");
+                return; 
+            }
+
+            globalData = newlyFetchedData;
 
             // Extract unique URLs and populate dropdown
             const urlSet = new Set();
             globalData.forEach(day => day.urls.forEach(site => urlSet.add(site.url)));
             
             const urlSelect = document.getElementById('urlSelect');
+            const currentSelectedUrl = urlSelect.value; // Remember what was selected before
+            
             urlSelect.innerHTML = '';
             urlSet.forEach(url => urlSelect.add(new Option(url, url)));
             
             if (urlSet.size > 0) {
                 urlSelect.classList.remove('hidden');
-                updateChartsForUrl(); // Render for the first URL in the list
+                document.getElementById('chartsContainer').classList.remove('hidden');
+                
+                // Keep the same URL selected if it exists in the new data, otherwise default to the first one
+                if (urlSet.has(currentSelectedUrl)) {
+                    urlSelect.value = currentSelectedUrl;
+                }
+                updateChartsForUrl(); 
             }
-
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('chartsContainer').classList.remove('hidden');
         }
 
         function updateChartsForUrl() {
             const targetUrl = document.getElementById('urlSelect').value;
             
-            // Filter the global data for the specific URL
             const labels = [];
             const desktopPerf = [], desktopSeo = [], desktopFcp = [];
             const mobilePerf = [], mobileSeo = [], mobileFcp = [];
@@ -134,7 +224,7 @@
             globalData.forEach(day => {
                 const siteData = day.urls.find(s => s.url === targetUrl);
                 if (siteData) {
-                    labels.push(day.date);
+                    labels.push(day.date.substring(5)); // Just show MM-DD for cleaner X-axis
                     desktopPerf.push(siteData.desktop?.performance || null);
                     desktopSeo.push(siteData.desktop?.seo || null);
                     desktopFcp.push(siteData.desktop?.fcp_ms || null);
@@ -146,13 +236,13 @@
             });
 
             createChart('desktopChart', labels, [
-                { label: 'Performance', data: desktopPerf, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)' },
-                { label: 'SEO', data: desktopSeo, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' }
+                { label: 'Performance', data: desktopPerf, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)' },
+                { label: 'SEO', data: desktopSeo, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)' }
             ]);
 
             createChart('mobileChart', labels, [
-                { label: 'Performance', data: mobilePerf, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' },
-                { label: 'SEO', data: mobileSeo, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)' }
+                { label: 'Performance', data: mobilePerf, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)' },
+                { label: 'SEO', data: mobileSeo, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.05)' }
             ]);
 
             createChart('fcpChart', labels, [
@@ -165,17 +255,24 @@
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            Chart.defaults.color = '#94a3b8';
+            // Enterprise Chart Styling
+            Chart.defaults.color = '#64748b';
+            Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+            
             charts[canvasId] = new Chart(ctx, {
                 type: 'line',
-                data: { labels: labels, datasets: datasets.map(ds => ({ ...ds, borderWidth: 2, tension: 0.3, fill: true, spanGaps: true })) },
+                data: { labels: labels, datasets: datasets.map(ds => ({ ...ds, borderWidth: 2, tension: 0.4, fill: true, spanGaps: true, pointRadius: 3, pointHoverRadius: 6 })) },
                 options: {
                     responsive: true,
+                    interaction: { mode: 'index', intersect: false },
                     scales: {
-                        y: { grid: { color: '#334155' }, min: 0 },
+                        y: { grid: { color: 'rgba(100, 116, 139, 0.1)' }, min: 0 },
                         x: { grid: { display: false } }
                     },
-                    plugins: { legend: { position: 'top' } }
+                    plugins: { 
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: 'rgba(51, 65, 85, 0.5)', borderWidth: 1 }
+                    }
                 }
             });
         }
