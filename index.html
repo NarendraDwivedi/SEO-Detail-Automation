@@ -1,286 +1,957 @@
 <!DOCTYPE html>
-<html lang="en" class="theme-slate">
+<html lang="en" data-theme="obsidian">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive">
-    <title>SEO Automation Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-body: #0f172a; 
-            --bg-card: #1e293b; 
-            --border-color: #334155; 
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-        }
-        html.theme-abyss {
-            --bg-body: #081225; 
-            --bg-card: #0f1c35; 
-            --border-color: #1e3a66;
-            --text-main: #e0f2fe;
-            --text-muted: #7dd3fc;
-        }
-        body { 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-            transition: background-color 0.3s ease, color 0.3s ease;
-            margin: 0;
-        }
-        .enterprise-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        .enterprise-input {
-            background-color: var(--bg-body);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #dc2626;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 12px 24px;
-            position: fixed;
-            z-index: 50;
-            right: 30px;
-            bottom: 30px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>SEO Automation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+  --radius: 12px;
+  --radius-sm: 6px;
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="obsidian"] {
+  --bg:        #080c12;
+  --bg-1:      #0d1117;
+  --bg-2:      #131920;
+  --bg-3:      #1a2230;
+  --border:    rgba(255,255,255,0.07);
+  --border-h:  rgba(255,255,255,0.14);
+  --text:      #e8eef8;
+  --text-2:    #8da0b8;
+  --text-3:    #4c607a;
+  --accent:    #3d9eff;
+  --accent-g:  #22d3a0;
+  --accent-y:  #f5b731;
+  --accent-r:  #ff5e6c;
+  --accent-p:  #a78bfa;
+  --glow:      rgba(61,158,255,0.15);
+}
+
+[data-theme="arctic"] {
+  --bg:        #f0f4fa;
+  --bg-1:      #ffffff;
+  --bg-2:      #f8fafd;
+  --bg-3:      #edf2fb;
+  --border:    rgba(0,0,0,0.08);
+  --border-h:  rgba(0,0,0,0.16);
+  --text:      #0f1c30;
+  --text-2:    #4a6080;
+  --text-3:    #9ab0cc;
+  --accent:    #0065db;
+  --accent-g:  #00a67e;
+  --accent-y:  #c78800;
+  --accent-r:  #e0283b;
+  --accent-p:  #6c50d8;
+  --glow:      rgba(0,101,219,0.1);
+}
+
+[data-theme="terminal"] {
+  --bg:        #040d07;
+  --bg-1:      #071009;
+  --bg-2:      #0c1a0f;
+  --bg-3:      #122014;
+  --border:    rgba(0,255,65,0.1);
+  --border-h:  rgba(0,255,65,0.2);
+  --text:      #c8ffd4;
+  --text-2:    #5dbf6e;
+  --text-3:    #2a6035;
+  --accent:    #00ff41;
+  --accent-g:  #00e5ff;
+  --accent-y:  #ffe600;
+  --accent-r:  #ff3c5e;
+  --accent-p:  #cc77ff;
+  --glow:      rgba(0,255,65,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-1); }
+::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 24px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-p));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px var(--glow);
+}
+.brand-title { font-family: var(--font-mono); font-size: 15px; font-weight: 700; letter-spacing: 0.03em; }
+.brand-sub { font-size: 12px; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 1px; }
+
+.topbar-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.ctrl-select {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238da0b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+.ctrl-select:focus { border-color: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all var(--transition);
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(61,158,255,0.25);
+}
+.btn-primary:hover { filter: brightness(1.12); box-shadow: 0 0 28px rgba(61,158,255,0.4); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-ghost {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.btn-ghost:hover { border-color: var(--border-h); color: var(--text); background: var(--bg-3); }
+
+.theme-pills { display: flex; gap: 4px; border: 1px solid var(--border); border-radius: 8px; padding: 3px; background: var(--bg-2); }
+.theme-pill {
+  padding: 4px 11px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  transition: all var(--transition);
+  letter-spacing: 0.03em;
+}
+.theme-pill.active, .theme-pill:hover { background: var(--bg-3); color: var(--text); }
+.theme-pill.active { color: var(--accent); }
+
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; }
+.status-dot.ok { background: var(--accent-g); box-shadow: 0 0 8px rgba(34,211,160,0.5); animation: pulse-dot 2s infinite; }
+.status-dot.err { background: var(--accent-r); box-shadow: 0 0 8px rgba(255,94,108,0.5); }
+.status-dot.loading { background: var(--accent-y); box-shadow: 0 0 8px rgba(245,183,49,0.5); animation: pulse-dot 1s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+.status-left { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); }
+.status-right { display: flex; align-items: center; gap: 16px; }
+.status-stat { text-align: right; }
+.status-stat-val { font-family: var(--font-mono); font-size: 12px; color: var(--text); font-weight: 700; }
+.status-stat-lbl { font-size: 10px; color: var(--text-3); letter-spacing: 0.05em; text-transform: uppercase; }
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.kpi {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition);
+}
+.kpi:hover { border-color: var(--border-h); transform: translateY(-1px); }
+.kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.kpi.blue::after { background: linear-gradient(90deg, var(--accent), transparent); }
+.kpi.green::after { background: linear-gradient(90deg, var(--accent-g), transparent); }
+.kpi.yellow::after { background: linear-gradient(90deg, var(--accent-y), transparent); }
+.kpi.purple::after { background: linear-gradient(90deg, var(--accent-p), transparent); }
+.kpi.red::after { background: linear-gradient(90deg, var(--accent-r), transparent); }
+
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); margin-bottom: 6px; font-family: var(--font-mono); }
+.kpi-value { font-family: var(--font-mono); font-size: 26px; font-weight: 700; line-height: 1; }
+.kpi-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+.kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-family: var(--font-mono); margin-top: 6px; }
+.kpi-delta.up { color: var(--accent-g); }
+.kpi-delta.down { color: var(--accent-r); }
+.kpi-delta.flat { color: var(--text-3); }
+.kpi-badge { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 10px; font-family: var(--font-mono); }
+.badge-good { background: rgba(34,211,160,0.1); color: var(--accent-g); }
+.badge-mid { background: rgba(245,183,49,0.1); color: var(--accent-y); }
+.badge-bad { background: rgba(255,94,108,0.1); color: var(--accent-r); }
+
+.insight-strip {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--text-2);
+  flex-wrap: wrap;
+}
+.insight-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.insight-strip b { color: var(--text); }
+
+.url-bar {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.url-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-2);
+  transition: all var(--transition);
+  font-family: var(--font-mono);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.url-tab.active { border-color: var(--accent); background: rgba(61,158,255,0.08); color: var(--accent); }
+.url-tab:hover:not(.active) { border-color: var(--border-h); color: var(--text); }
+.url-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.span-2 { grid-column: span 2; }
+.span-1 { grid-column: span 1; }
+
+@media (max-width: 900px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .span-2, .span-1 { grid-column: span 1; }
+}
+
+.chart-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.chart-card:hover { border-color: var(--border-h); }
+
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.card-title-dot { width: 8px; height: 8px; border-radius: 50%; }
+.card-meta { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
+.chart-wrap { padding: 16px 16px 12px; position: relative; }
+.chart-wrap canvas { max-height: 240px; }
+
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  position: sticky; top: 0;
+  white-space: nowrap;
+}
+td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  transition: background var(--transition);
+  white-space: nowrap;
+}
+tr:hover td { background: var(--bg-2); }
+tr:last-child td { border-bottom: none; }
+.score-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.center-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--text-3);
+  gap: 12px;
+}
+.center-state .state-icon { font-size: 40px; }
+.center-state h3 { font-size: 16px; color: var(--text-2); }
+.center-state p { font-size: 13px; max-width: 340px; line-height: 1.7; }
+
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.toast-container { position: fixed; bottom: 28px; right: 28px; z-index: 99; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 260px; max-width: 380px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border: 1px solid transparent;
+  animation: slide-in 0.3s cubic-bezier(.34,1.56,.64,1);
+  backdrop-filter: blur(8px);
+}
+.toast.info { background: var(--bg-2); border-color: var(--border); color: var(--text); }
+.toast.success { background: rgba(34,211,160,0.1); border-color: rgba(34,211,160,0.25); color: var(--accent-g); }
+.toast.error { background: rgba(255,94,108,0.1); border-color: rgba(255,94,108,0.25); color: var(--accent-r); }
+.toast.warn { background: rgba(245,183,49,0.1); border-color: rgba(245,183,49,0.25); color: var(--accent-y); }
+@keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slide-out { to { transform: translateX(120%); opacity: 0; } }
+
+.footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: var(--text-3);
+  font-family: var(--font-mono);
+  flex-wrap: wrap; gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .topbar { flex-direction: column; align-items: flex-start; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .status-right { display: none; }
+}
+
+.fade-in { animation: fade-in 0.4s ease both; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.d1 { animation-delay: 0.05s; }
+.d2 { animation-delay: 0.1s; }
+.d3 { animation-delay: 0.15s; }
+.d4 { animation-delay: 0.2s; }
+.d5 { animation-delay: 0.25s; }
+</style>
 </head>
-<body class="min-h-screen p-6 md:p-12">
+<body>
 
-    <div class="max-w-7xl mx-auto">
-        <header class="mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b pb-6" style="border-color: var(--border-color);">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight">SEO Dashboard</h1>
-                <p class="mt-1" style="color: var(--text-muted);">Automated 30-Day Historical Web Vitals Analysis</p>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-3">
-                <button onclick="toggleTheme()" class="enterprise-card hover:brightness-110 p-2.5 rounded-lg transition mr-2" title="Switch Dark Theme">
-                    <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                </button>
-                <select id="urlSelect" onchange="updateChartsForUrl()" class="hidden enterprise-input text-sm rounded-lg focus:ring-blue-500 block p-2.5 outline-none max-w-xs truncate"></select>
-                <select id="monthSelect" class="enterprise-input text-sm rounded-lg focus:ring-blue-500 block p-2.5 outline-none">
-                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
-                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
-                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
-                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
-                </select>
-                <select id="yearSelect" class="enterprise-input text-sm rounded-lg focus:ring-blue-500 block p-2.5 outline-none"></select>
-                <button id="analyzeBtn" onclick="loadDashboardData()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition flex items-center gap-2">
-                    <span id="btnText">Analyze</span>
-                    <div id="btnSpinner" class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                </button>
-            </div>
-        </header>
+<div class="shell">
 
-        <div id="initialLoader" class="flex justify-center items-center py-32">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-
-        <div id="emptyState" class="hidden flex flex-col justify-center items-center py-20">
-            <svg class="w-16 h-16 mb-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-            <h3 class="text-xl font-medium mb-2">No Telemetry Data Found</h3>
-            <p style="color: var(--text-muted);">The pipeline hasn't recorded any web vitals for this time period yet.</p>
-        </div>
-
-        <div id="chartsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
-            <div class="enterprise-card rounded-xl p-6 shadow-lg">
-                <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Desktop Performance & SEO</h3>
-                <canvas id="desktopChart"></canvas>
-            </div>
-            <div class="enterprise-card rounded-xl p-6 shadow-lg">
-                <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Mobile Performance & SEO</h3>
-                <canvas id="mobileChart"></canvas>
-            </div>
-            <div class="enterprise-card rounded-xl p-6 shadow-lg lg:col-span-2">
-                <h3 class="text-lg font-semibold mb-4 border-b pb-2" style="border-color: var(--border-color);">Raw Metrics Tracker (FCP in ms)</h3>
-                <canvas id="fcpChart"></canvas>
-            </div>
-        </div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">📡</div>
+      <div>
+        <div class="brand-title">SEO TELEMETRY</div>
+        <div class="brand-sub">NarendraDwivedi.org · Automated SEO Details</div>
+      </div>
     </div>
+    <div class="topbar-controls">
+      <div class="theme-pills" title="Switch theme">
+        <button class="theme-pill active" onclick="setTheme('obsidian',this)">Obsidian</button>
+        <button class="theme-pill" onclick="setTheme('arctic',this)">Arctic</button>
+        <button class="theme-pill" onclick="setTheme('terminal',this)">Terminal</button>
+      </div>
+      <select id="monthSelect" class="ctrl-select"></select>
+      <select id="yearSelect" class="ctrl-select"></select>
+      <button id="analyzeBtn" class="btn btn-primary" onclick="loadDashboardData()">
+        <svg id="btnIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span id="btnText">Analyze</span>
+      </button>
+    </div>
+  </header>
 
-    <div id="toast">No data found for this period.</div>
+  <div class="status-bar">
+    <div class="status-left">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusMsg">Ready — select a period and click Analyze</span>
+    </div>
+    <div class="status-right" id="statusRight"></div>
+  </div>
 
-    <script>
-        const monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        let charts = {};
-        let globalData = [];
-        let isFirstLoad = true;
+  <div id="mainArea">
+    <div class="center-state">
+      <div class="state-icon">🛰</div>
+      <h3>Waiting for Analysis</h3>
+      <p>Select a month and year, then click <b>Analyze</b> to pull 30-day web vitals from the seo detail.</p>
+    </div>
+  </div>
 
-        const today = new Date();
-        document.getElementById('monthSelect').value = today.getMonth();
-        const yearSelect = document.getElementById('yearSelect');
-        for (let y = today.getFullYear(); y >= 2025; y--) {
-            yearSelect.add(new Option(y, y));
+  <footer class="footer">
+    <span>SEO-Detail-Automation</span>
+    <span id="footerTs"></span>
+  </footer>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHORT_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let globalData = [];
+let activeUrl  = '';
+let charts     = {};
+
+(function init() {
+  const today = new Date();
+  const ms = document.getElementById('monthSelect');
+  MONTHS.forEach((m, i) => {
+    const o = new Option(m, i);
+    if (i === today.getMonth()) o.selected = true;
+    ms.add(o);
+  });
+  // Year select
+  const ys = document.getElementById('yearSelect');
+  for (let y = today.getFullYear(); y >= 2025; y--) {
+    ys.add(new Option(y, y));
+  }
+  document.getElementById('footerTs').textContent = `IST Auto-Sync · ${today.toLocaleDateString('en-IN', {dateStyle:'medium'})}`;
+})();
+
+function setTheme(name, btn) {
+  document.documentElement.setAttribute('data-theme', name);
+  document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  // re-render charts with new colors
+  if (globalData.length > 0) renderCharts();
+}
+
+function toast(msg, type = 'info', duration = 4000) {
+  const icons = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'slide-out 0.3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
+
+function setStatus(state, msg, stats = null) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + state;
+  document.getElementById('statusMsg').textContent = msg;
+  const sr = document.getElementById('statusRight');
+  if (stats) {
+    sr.innerHTML = stats.map(s => `
+      <div class="status-stat">
+        <div class="status-stat-val">${s.val}</div>
+        <div class="status-stat-lbl">${s.lbl}</div>
+      </div>
+    `).join('');
+  } else {
+    sr.innerHTML = '';
+  }
+}
+
+async function loadDashboardData() {
+  const btn = document.getElementById('analyzeBtn');
+  document.getElementById('btnText').textContent = 'Loading…';
+  document.getElementById('btnIcon').innerHTML = '<circle cx="12" cy="12" r="10"/>';
+  btn.disabled = true;
+  setStatus('loading', 'Fetching telemetry data');
+
+  const month   = parseInt(document.getElementById('monthSelect').value);
+  const year    = parseInt(document.getElementById('yearSelect').value);
+  const today   = new Date();
+
+  let anchor = new Date(year, month + 1, 0); 
+  if (year === today.getFullYear() && month === today.getMonth()) anchor = new Date();
+
+  const fetchPromises = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(anchor);
+    d.setDate(anchor.getDate() - i);
+    const y = d.getFullYear();
+    const m = MONTHS[d.getMonth()];
+    const day = String(d.getDate()).padStart(2,'0');
+    const path = `./${y}/${m}/${day}/detail.json`;
+    fetchPromises.push(
+      fetch(path, { cache: 'no-store' })
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    );
+  }
+
+  let results;
+  try {
+    results = await Promise.all(fetchPromises);
+  } catch(e) {
+    setStatus('err', 'Network error during fetch');
+    toast('Network error — check your connection', 'error');
+    resetBtn();
+    return;
+  }
+
+  globalData = results.filter(Boolean).reverse();
+  resetBtn();
+
+  if (globalData.length === 0) {
+    setStatus('err', `No data found for ${MONTHS[month]} ${year}`);
+    toast(`No telemetry recorded for ${MONTHS[month]} ${year}`, 'warn', 6000);
+    renderEmpty();
+    return;
+  }
+
+  const urlSet = new Set();
+  globalData.forEach(day => day.urls.forEach(s => urlSet.add(s.url)));
+  const urls = [...urlSet];
+  if (!activeUrl || !urls.includes(activeUrl)) activeUrl = urls[0];
+
+  setStatus('ok', `Loaded ${globalData.length} day(s) of telemetry · ${MONTHS[month]} ${year}`, [
+    { val: globalData.length, lbl: 'Days' },
+    { val: urls.length, lbl: 'URLs' },
+    { val: countDataPoints(urls[0]), lbl: 'Data Pts' }
+  ]);
+  toast(`${globalData.length} days of telemetry loaded`, 'success');
+  renderDashboard(urls);
+}
+
+function countDataPoints(url) {
+  return globalData.filter(d => d.urls.find(s => s.url === url)).length;
+}
+
+function resetBtn() {
+  document.getElementById('btnText').textContent = 'Analyze';
+  document.getElementById('btnIcon').innerHTML = `<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>`;
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+function renderEmpty() {
+  document.getElementById('mainArea').innerHTML = `
+    <div class="center-state fade-in">
+      <div class="state-icon">📭</div>
+      <h3>No Telemetry Found</h3>
+      <p>The automation hasn't logged any web vitals for this time period yet. Try an earlier month or trigger the worker manually.</p>
+    </div>`;
+}
+
+function renderDashboard(urls) {
+  const area = document.getElementById('mainArea');
+
+  const tabsHtml = urls.map(u => `
+    <button class="url-tab ${u === activeUrl ? 'active' : ''}" onclick="switchUrl('${escHtml(u)}')" title="${escHtml(u)}">
+      <span class="url-dot"></span>
+      ${escHtml(shortUrl(u))}
+    </button>`).join('');
+
+  const kpiHtml = buildKpiHtml();
+
+  const insightHtml = buildInsight();
+
+  area.innerHTML = `
+    <div class="url-bar fade-in">${tabsHtml}</div>
+    <div class="kpi-row fade-in d1" id="kpiRow">${kpiHtml}</div>
+    <div class="insight-strip fade-in d2" id="insightStrip">${insightHtml}</div>
+    <div class="charts-grid fade-in d3" id="chartsGrid">
+      <div class="chart-card span-1">
+        <div class="card-head">
+          <div class="card-title"><span class="card-title-dot" style="background:var(--accent)"></span>Desktop Performance & SEO</div>
+          <span class="card-meta">Score / 100</span>
+        </div>
+        <div class="chart-wrap"><canvas id="desktopChart"></canvas></div>
+      </div>
+      <div class="chart-card span-1">
+        <div class="card-head">
+          <div class="card-title"><span class="card-title-dot" style="background:var(--accent-y)"></span>Mobile Performance & SEO</div>
+          <span class="card-meta">Score / 100</span>
+        </div>
+        <div class="chart-wrap"><canvas id="mobileChart"></canvas></div>
+      </div>
+      <div class="chart-card span-1">
+        <div class="card-head">
+          <div class="card-title"><span class="card-title-dot" style="background:var(--accent-p)"></span>First Contentful Paint</div>
+          <span class="card-meta">Milliseconds</span>
+        </div>
+        <div class="chart-wrap"><canvas id="fcpChart"></canvas></div>
+      </div>
+      <div class="chart-card span-1">
+        <div class="card-head">
+          <div class="card-title"><span class="card-title-dot" style="background:var(--accent-r)"></span>Cumulative Layout Shift</div>
+          <span class="card-meta">Lower = better</span>
+        </div>
+        <div class="chart-wrap"><canvas id="clsChart"></canvas></div>
+      </div>
+      <div class="chart-card span-2">
+        <div class="card-head">
+          <div class="card-title"><span class="card-title-dot" style="background:var(--accent-g)"></span>30-Day Raw Data Log</div>
+          <span class="card-meta" id="tableCount"></span>
+        </div>
+        <div class="table-wrap" id="dataTable"></div>
+      </div>
+    </div>`;
+
+  renderCharts();
+}
+
+function switchUrl(url) {
+  activeUrl = url;
+  document.querySelectorAll('.url-tab').forEach(t => {
+    t.classList.toggle('active', t.title === url);
+  });
+  document.getElementById('kpiRow').innerHTML = buildKpiHtml();
+  document.getElementById('insightStrip').innerHTML = buildInsight();
+  renderCharts();
+}
+
+function buildKpiHtml() {
+  const site = getUrlData();
+  if (!site.length) return '<div style="color:var(--text-3);font-size:12px;">No data for this URL yet.</div>';
+
+  const latest = site[site.length - 1];
+  const prev   = site.length > 1 ? site[site.length - 2] : null;
+
+  const dp = (a, b, field) => {
+    const av = a?.[field], bv = b?.[field];
+    if (av == null || bv == null) return null;
+    return av - bv;
+  };
+
+  const deskPerf = latest.desktop?.performance;
+  const mobPerf  = latest.mobile?.performance;
+  const deskSeo  = latest.desktop?.seo;
+  const mobSeo   = latest.mobile?.seo;
+  const deskFcp  = latest.desktop?.fcp_ms;
+  const cls      = latest.desktop?.cls;
+
+  const avgSeo  = avg(site.map(d => d.desktop?.seo).filter(Boolean));
+  const avgPerf = avg(site.map(d => d.desktop?.performance).filter(Boolean));
+  const days    = site.length;
+
+  return `
+    ${kpiCard('Desktop Perf', deskPerf, '%', 'blue', scoreBadge(deskPerf), deltaOf(deskPerf, prev?.desktop?.performance))}
+    ${kpiCard('Mobile Perf',  mobPerf,  '%', 'yellow', scoreBadge(mobPerf), deltaOf(mobPerf, prev?.mobile?.performance))}
+    ${kpiCard('Desktop SEO',  deskSeo,  '%', 'green',  scoreBadge(deskSeo), deltaOf(deskSeo, prev?.desktop?.seo))}
+    ${kpiCard('Mobile SEO',   mobSeo,   '%', 'purple', scoreBadge(mobSeo),  deltaOf(mobSeo, prev?.mobile?.seo))}
+    ${kpiCard('Desktop FCP',  deskFcp != null ? (deskFcp/1000).toFixed(2) : '—', 's', 'red', fcpBadge(deskFcp), '')}
+    ${kpiCard('Avg Perf',     avgPerf != null ? Math.round(avgPerf) : '—', '%', 'blue', '', `<span style="color:var(--text-3);font-size:11px;">${days}-day avg</span>`)}
+    ${kpiCard('Avg SEO',      avgSeo  != null ? Math.round(avgSeo)  : '—', '%', 'green', '', `<span style="color:var(--text-3);font-size:11px;">${days}-day avg</span>`)}
+    ${kpiCard('CLS',          cls != null ? cls.toFixed(4) : '—', '', 'purple', clsBadge(cls), '')}
+  `;
+}
+
+function kpiCard(label, value, unit, color, badge, extra) {
+  return `<div class="kpi ${color}">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${value ?? '—'}<span style="font-size:13px;font-weight:400;color:var(--text-3)">${value != null ? unit : ''}</span></div>
+    <div style="margin-top:4px;display:flex;align-items:center;gap:6px;">${badge}${extra}</div>
+  </div>`;
+}
+
+function deltaOf(curr, prev) {
+  if (curr == null || prev == null) return '';
+  const d = curr - prev;
+  const cls = d > 0 ? 'up' : d < 0 ? 'down' : 'flat';
+  const arrow = d > 0 ? '▲' : d < 0 ? '▼' : '—';
+  return `<div class="kpi-delta ${cls}">${arrow} ${Math.abs(d).toFixed(1)}</div>`;
+}
+
+function scoreBadge(v) {
+  if (v == null) return '';
+  if (v >= 90) return `<span class="kpi-badge badge-good">Good</span>`;
+  if (v >= 50) return `<span class="kpi-badge badge-mid">Needs Work</span>`;
+  return `<span class="kpi-badge badge-bad">Poor</span>`;
+}
+
+function fcpBadge(ms) {
+  if (ms == null) return '';
+  if (ms <= 1800) return `<span class="kpi-badge badge-good">Fast</span>`;
+  if (ms <= 3000) return `<span class="kpi-badge badge-mid">Moderate</span>`;
+  return `<span class="kpi-badge badge-bad">Slow</span>`;
+}
+
+function clsBadge(v) {
+  if (v == null) return '';
+  if (v <= 0.1) return `<span class="kpi-badge badge-good">Good</span>`;
+  if (v <= 0.25) return `<span class="kpi-badge badge-mid">Moderate</span>`;
+  return `<span class="kpi-badge badge-bad">Poor</span>`;
+}
+
+function buildInsight() {
+  const site = getUrlData();
+  if (!site.length) return '';
+  const insights = [];
+
+  const perf = site.map(d => d.desktop?.performance).filter(Boolean);
+  const seo  = site.map(d => d.desktop?.seo).filter(Boolean);
+  const fcp  = site.map(d => d.desktop?.fcp_ms).filter(Boolean);
+
+  if (perf.length >= 2) {
+    const trend = perf[perf.length-1] - perf[0];
+    if (trend > 5) insights.push(`Desktop performance improved by <b>${trend.toFixed(0)} pts</b> over the tracked period.`);
+    else if (trend < -5) insights.push(`Desktop performance declined by <b>${Math.abs(trend).toFixed(0)} pts</b> — investigate recent deploys.`);
+  }
+  const worstFcp = fcp.length ? Math.max(...fcp) : null;
+  const bestFcp  = fcp.length ? Math.min(...fcp) : null;
+  if (worstFcp && bestFcp) {
+    insights.push(`FCP ranged from <b>${(bestFcp/1000).toFixed(2)}s</b> to <b>${(worstFcp/1000).toFixed(2)}s</b> desktop.`);
+  }
+  if (seo.length) {
+    const avgS = Math.round(avg(seo));
+    insights.push(`Average desktop SEO score: <b>${avgS}/100</b>.`);
+  }
+  const missing = 30 - site.length;
+  if (missing > 0) insights.push(`<b>${missing}</b> day(s) have no data (automation may not have run yet).`);
+
+  return `<span class="insight-icon">💡</span><span>${insights.join(' &nbsp;·&nbsp; ')}</span>`;
+}
+
+function renderCharts() {
+  const site = getUrlData();
+
+  const labels    = site.map(d => d.date.substring(5));
+  const deskPerf  = site.map(d => d.desktop?.performance ?? null);
+  const deskSeo   = site.map(d => d.desktop?.seo ?? null);
+  const mobPerf   = site.map(d => d.mobile?.performance ?? null);
+  const mobSeo    = site.map(d => d.mobile?.seo ?? null);
+  const deskFcp   = site.map(d => d.desktop?.fcp_ms ?? null);
+  const mobFcp    = site.map(d => d.mobile?.fcp_ms ?? null);
+  const deskCls   = site.map(d => d.desktop?.cls ?? null);
+  const mobCls    = site.map(d => d.mobile?.cls ?? null);
+
+  const cv = getVar;
+
+  makeChart('desktopChart', labels, [
+    ds('Performance', deskPerf, cv('--accent'), 'rgba(61,158,255,0.08)'),
+    ds('SEO',         deskSeo,  cv('--accent-g'), 'rgba(34,211,160,0.05)'),
+  ], {min:0, max:100});
+
+  makeChart('mobileChart', labels, [
+    ds('Performance', mobPerf, cv('--accent-y'), 'rgba(245,183,49,0.08)'),
+    ds('SEO',         mobSeo,  cv('--accent-p'), 'rgba(139,92,246,0.05)'),
+  ], {min:0, max:100});
+
+  makeChart('fcpChart', labels, [
+    ds('Desktop FCP', deskFcp, cv('--accent-p'), 'rgba(139,92,246,0.05)'),
+    ds('Mobile FCP',  mobFcp,  cv('--accent-y'), 'rgba(245,183,49,0.05)'),
+  ], {min:0});
+
+  makeChart('clsChart', labels, [
+    ds('Desktop CLS', deskCls, cv('--accent-r'), 'rgba(255,94,108,0.05)'),
+    ds('Mobile CLS',  mobCls,  cv('--accent'),   'rgba(61,158,255,0.05)'),
+  ], {min:0});
+
+  buildTable(site);
+}
+
+function getVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function ds(label, data, color, bg) {
+  return { label, data, borderColor: color, backgroundColor: bg, borderWidth: 2, tension: 0.35, fill: true, spanGaps: true, pointRadius: 2.5, pointHoverRadius: 6, pointBackgroundColor: color };
+}
+
+function makeChart(id, labels, datasets, yOptions = {}) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cv = getVar;
+
+  charts[id] = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      animation: { duration: 400 },
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        y: {
+          ...yOptions,
+          grid: { color: 'rgba(128,144,160,0.07)', drawBorder: false },
+          ticks: { color: cv('--text-3'), font: { family: "'Space Mono', monospace", size: 10 }, maxTicksLimit: 6 },
+          border: { display: false },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: cv('--text-3'), font: { family: "'Space Mono', monospace", size: 10 }, maxRotation: 0 },
+          border: { display: false },
         }
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.classList.contains('theme-slate')) {
-                html.classList.remove('theme-slate');
-                html.classList.add('theme-abyss');
-            } else {
-                html.classList.remove('theme-abyss');
-                html.classList.add('theme-slate');
-            }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'end',
+          labels: { color: cv('--text-2'), font: { family: "'DM Sans', sans-serif", size: 11 }, usePointStyle: true, pointStyleWidth: 8, boxHeight: 6 }
+        },
+        tooltip: {
+          backgroundColor: cv('--bg-2'),
+          titleColor: cv('--text'),
+          bodyColor: cv('--text-2'),
+          borderColor: cv('--border-h'),
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 6,
+          titleFont: { family: "'Space Mono', monospace", size: 11 },
+          bodyFont: { family: "'DM Sans', sans-serif", size: 12 },
+          callbacks: {
+            title: items => `📅 ${items[0].label}`,
+          }
         }
+      }
+    }
+  });
+}
 
-        function showToast(message) {
-            const toast = document.getElementById("toast");
-            toast.innerText = message;
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 4000);
-        }
+function buildTable(site) {
+  const tc = document.getElementById('tableCount');
+  if (tc) tc.textContent = `${site.length} entries`;
 
-        async function loadDashboardData() {
-            document.getElementById('btnText').innerText = "Loading...";
-            document.getElementById('btnSpinner').classList.remove('hidden');
-            document.getElementById('analyzeBtn').disabled = true;
-            document.getElementById('emptyState').classList.add('hidden');
+  const rows = [...site].reverse().map(d => `
+    <tr>
+      <td>${d.date}</td>
+      <td>${scoreChip(d.desktop?.performance)}</td>
+      <td>${scoreChip(d.desktop?.seo)}</td>
+      <td style="color:var(--text-2)">${d.desktop?.fcp_ms != null ? (d.desktop.fcp_ms/1000).toFixed(2)+'s' : '—'}</td>
+      <td style="color:var(--text-2)">${d.desktop?.cls ?? '—'}</td>
+      <td>${scoreChip(d.mobile?.performance)}</td>
+      <td>${scoreChip(d.mobile?.seo)}</td>
+      <td style="color:var(--text-2)">${d.mobile?.fcp_ms != null ? (d.mobile.fcp_ms/1000).toFixed(2)+'s' : '—'}</td>
+      <td style="color:var(--text-2)">${d.mobile?.cls ?? '—'}</td>
+    </tr>`).join('');
 
-            const selectedMonth = parseInt(document.getElementById('monthSelect').value);
-            const selectedYear = parseInt(document.getElementById('yearSelect').value);
-            
-            let anchorDate = new Date(selectedYear, selectedMonth + 1, 0); 
-            if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
-                anchorDate = new Date();
-            }
+  document.getElementById('dataTable').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>D.Perf</th><th>D.SEO</th><th>D.FCP</th><th>D.CLS</th>
+          <th>M.Perf</th><th>M.SEO</th><th>M.FCP</th><th>M.CLS</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
 
-            const fetchPromises = [];
-            for (let i = 0; i < 30; i++) {
-                const targetDate = new Date(anchorDate);
-                targetDate.setDate(anchorDate.getDate() - i);
-                
-                const y = targetDate.getFullYear();
-                const m = monthsStr[targetDate.getMonth()];
-                const d = String(targetDate.getDate()).padStart(2, '0');
-                
-                const path = `./${y}/${m}/${d}/detail.json`;
-                fetchPromises.push(fetch(path).then(res => res.ok ? res.json() : null).catch(() => null));
-            }
+function scoreChip(v) {
+  if (v == null) return `<span style="color:var(--text-3)">—</span>`;
+  const color = v >= 90 ? 'var(--accent-g)' : v >= 50 ? 'var(--accent-y)' : 'var(--accent-r)';
+  const bg    = v >= 90 ? 'rgba(34,211,160,0.1)' : v >= 50 ? 'rgba(245,183,49,0.1)' : 'rgba(255,94,108,0.1)';
+  return `<span class="score-chip" style="color:${color};background:${bg}">${v}</span>`;
+}
 
-            const results = await Promise.all(fetchPromises);
-            const newlyFetchedData = results.filter(d => d !== null).reverse(); 
+function getUrlData() {
+  return globalData.map(day => {
+    const s = day.urls.find(u => u.url === activeUrl);
+    return s ? { date: day.date, ...s } : null;
+  }).filter(Boolean);
+}
 
-            document.getElementById('btnText').innerText = "Analyze";
-            document.getElementById('btnSpinner').classList.add('hidden');
-            document.getElementById('analyzeBtn').disabled = false;
-            
-            if (isFirstLoad) {
-                document.getElementById('initialLoader').classList.add('hidden');
-                isFirstLoad = false;
-            }
+function avg(arr) {
+  if (!arr.length) return null;
+  return arr.reduce((a,b) => a+b, 0) / arr.length;
+}
 
-            if (newlyFetchedData.length === 0) {
-                document.getElementById('chartsContainer').classList.add('hidden');
-                document.getElementById('urlSelect').classList.add('hidden');
-                document.getElementById('emptyState').classList.remove('hidden');
-                showToast("No telemetry data found.");
-                return; 
-            }
+function shortUrl(url) {
+  try { return new URL(url).hostname; } catch(e) { return url; }
+}
 
-            globalData = newlyFetchedData;
-            const urlSet = new Set();
-            globalData.forEach(day => day.urls.forEach(site => urlSet.add(site.url)));
-            
-            const urlSelect = document.getElementById('urlSelect');
-            const currentSelectedUrl = urlSelect.value; 
-            
-            urlSelect.innerHTML = '';
-            urlSet.forEach(url => urlSelect.add(new Option(url, url)));
-            
-            if (urlSet.size > 0) {
-                urlSelect.classList.remove('hidden');
-                document.getElementById('chartsContainer').classList.remove('hidden');
-                
-                if (urlSet.has(currentSelectedUrl)) {
-                    urlSelect.value = currentSelectedUrl;
-                }
-                updateChartsForUrl(); 
-            }
-        }
-
-        function updateChartsForUrl() {
-            const targetUrl = document.getElementById('urlSelect').value;
-            
-            const labels = [];
-            const desktopPerf = [], desktopSeo = [], desktopFcp = [];
-            const mobilePerf = [], mobileSeo = [], mobileFcp = [];
-
-            globalData.forEach(day => {
-                const siteData = day.urls.find(s => s.url === targetUrl);
-                if (siteData) {
-                    labels.push(day.date.substring(5)); 
-                    desktopPerf.push(siteData.desktop?.performance || null);
-                    desktopSeo.push(siteData.desktop?.seo || null);
-                    desktopFcp.push(siteData.desktop?.fcp_ms || null);
-                    
-                    mobilePerf.push(siteData.mobile?.performance || null);
-                    mobileSeo.push(siteData.mobile?.seo || null);
-                    mobileFcp.push(siteData.mobile?.fcp_ms || null);
-                }
-            });
-
-            createChart('desktopChart', labels, [
-                { label: 'Performance', data: desktopPerf, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)' },
-                { label: 'SEO', data: desktopSeo, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)' }
-            ]);
-
-            createChart('mobileChart', labels, [
-                { label: 'Performance', data: mobilePerf, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)' },
-                { label: 'SEO', data: mobileSeo, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.05)' }
-            ]);
-
-            createChart('fcpChart', labels, [
-                { label: 'Desktop FCP (ms)', data: desktopFcp, borderColor: '#ec4899', backgroundColor: 'transparent' },
-                { label: 'Mobile FCP (ms)', data: mobileFcp, borderColor: '#06b6d4', backgroundColor: 'transparent' }
-            ]);
-        }
-
-        function createChart(canvasId, labels, datasets) {
-            if (charts[canvasId]) charts[canvasId].destroy();
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            
-            Chart.defaults.color = '#64748b';
-            Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
-            
-            charts[canvasId] = new Chart(ctx, {
-                type: 'line',
-                data: { labels: labels, datasets: datasets.map(ds => ({ ...ds, borderWidth: 2, tension: 0.4, fill: true, spanGaps: true, pointRadius: 3, pointHoverRadius: 6 })) },
-                options: {
-                    responsive: true,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        y: { grid: { color: 'rgba(100, 116, 139, 0.1)' }, min: 0 },
-                        x: { grid: { display: false } }
-                    },
-                    plugins: { 
-                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
-                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: 'rgba(51, 65, 85, 0.5)', borderWidth: 1 }
-                    }
-                }
-            });
-        }
-
-        window.onload = loadDashboardData;
-    </script>
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
 </body>
 </html>
