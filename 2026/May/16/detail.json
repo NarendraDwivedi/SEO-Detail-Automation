@@ -4,15 +4,15 @@
     {
       "url": "https://www.narendradwivedi.org",
       "mobile": {
-        "performance": 68,
+        "performance": 70,
         "seo": 92,
-        "fcp_ms": 2614,
-        "cls": 0.0019
+        "fcp_ms": 2755,
+        "cls": 0.0001
       },
       "desktop": {
-        "performance": 87,
+        "performance": 92,
         "seo": 92,
-        "fcp_ms": 650,
+        "fcp_ms": 653,
         "cls": 0.0133
       }
     }
