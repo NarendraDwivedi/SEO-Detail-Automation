@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-05",
+  "urls": [
+    {
+      "url": "https://www.narendradwivedi.org",
+      "mobile": {
+        "performance": 77,
+        "seo": 92,
+        "fcp_ms": 1181,
+        "cls": 0.0019
+      },
+      "desktop": {
+        "performance": 91,
+        "seo": 92,
+        "fcp_ms": 568,
+        "cls": 0.0209
+      }
+    }
+  ]
+}
